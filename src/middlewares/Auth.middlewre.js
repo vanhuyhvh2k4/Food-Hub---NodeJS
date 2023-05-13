@@ -5,7 +5,7 @@ const authMiddleware = {
         try {
             const email = req.body.email;
 
-            db.query(`SELECT * FROM users WHERE email='${email}'`, (err, users) => {
+            db.query(`SELECT * FROM user WHERE email='${email}'`, (err, users) => {
                 if (err) throw err;
 
                 if (users.length) {

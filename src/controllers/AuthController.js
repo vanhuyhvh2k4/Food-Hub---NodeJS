@@ -12,7 +12,7 @@ class AuthControlller {
           const password = req.body.password;
           const passwordHash = md5(password);
           db.query(
-              'INSERT INTO users (fullName, email, password) VALUES (?, ?, ?)',
+              'INSERT INTO user (fullName, email, password) VALUES (?, ?, ?)',
               [fullName, email, passwordHash],
               (error, results, fields) => {
                 if (error) {
@@ -38,7 +38,7 @@ class AuthControlller {
       const email = req.body.email;
       const password = req.body.password;
       const passwordHash = md5(password);
-      const query = `SELECT * FROM users WHERE email = "${email}" AND password = "${passwordHash}"`;
+      const query = `SELECT * FROM user WHERE email = "${email}" AND password = "${passwordHash}"`;
       let accessToken;
       let refreshToken;
 
@@ -49,9 +49,13 @@ class AuthControlller {
           accessToken = JWTUntils.generateAccessToken(results[0])
           refreshToken = JWTUntils.generateRefreshToken(results[0])
           res.status(200).json({
-            currentUser: results[0],
-            accessToken,
-            refreshToken
+            code: 'auth/login.success',
+            message: 'login successful',
+            data: {
+              currentUser: results[0],
+              accessToken,
+              refreshToken
+            }
           });
         } else {
           res.status(401).json({
@@ -82,8 +86,10 @@ class AuthControlller {
       const newAccessToken = JWTUntils.generateAccessToken(user);
       const newRefreshToken = JWTUntils.generateRefreshToken(user);
       res.status(200).json({
-        accessToken: newAccessToken,
-        refreshToken: newRefreshToken
+        data: {
+          accessToken: newAccessToken,
+          refreshToken: newRefreshToken
+        }
       })
     })
   }

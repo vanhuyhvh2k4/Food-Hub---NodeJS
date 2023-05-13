@@ -13,7 +13,7 @@ export const verifyToken = (req, res, next) => {
             });
             else {
                 req.user = user;
-            next();
+                next();
             }
         })
     } else {

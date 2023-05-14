@@ -3,11 +3,12 @@ import db from '../config/db.js';
 
 class ShopController {
 
+    //[GET] baseURL/shop/getInfo
     getInfo (req, res) {
         try {
             const shopName = req.query.shopName;
     
-            db.query('SELECT shop.id, shop.name, shop.image, shop.background, shop.place, shop.isTick FROM shop WHERE shop.name = ?', ([shopName]), (err, result) => {
+            db.query('SELECT shop.id, shop.name, shop.image, shop.background, shop.place, shop.isTick, COUNT(food_item.id) as quantity FROM food_item JOIN shop ON shop.id = food_item.shopId WHERE shop.name = ?', ([shopName]), (err, result) => {
                 if (err) throw err;
                 if (result.length) {
                     res.status(200).json({
@@ -31,6 +32,7 @@ class ShopController {
         }
     }
     
+    //[GET] baseURL/shop/getFood
     getFood (req, res) {
         try {
             const userId = req.user.id;

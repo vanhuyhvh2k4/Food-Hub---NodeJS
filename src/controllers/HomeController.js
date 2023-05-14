@@ -96,12 +96,13 @@ class HomeController {
         }
     }
 
+    //[GET] baseURL/home/getFood
     getFood (req, res) {
         try {
             const userId = req.user.id;
             const foodType = req.query.foodType;
 
-            db.query('SELECT food_item.id, food_item.name, food_item.image, food_item.description, food_item.price, shop.place, IF (food_like.id IS null, 0, 1) as liked FROM food_item JOIN food_category ON food_item.foodCategoryId = food_category.id JOIN shop ON food_item.shopId = shop.id LEFT JOIN food_like ON food_like.foodId = food_item.id AND food_like.userId = ? WHERE food_category.name = ? GROUP BY food_item.name', ([userId, foodType]), (err, result) => {
+            db.query('SELECT shop.name AS shopName, food_item.id, food_item.name, food_item.image, food_item.description, food_item.price, shop.place, IF (food_like.id IS null, 0, 1) as liked FROM food_item JOIN food_category ON food_item.foodCategoryId = food_category.id JOIN shop ON food_item.shopId = shop.id LEFT JOIN food_like ON food_like.foodId = food_item.id AND food_like.userId = ? WHERE food_category.name = ? GROUP BY food_item.name', ([userId, foodType]), (err, result) => {
                 if (err) throw err;
                 if (result.length) {
                     res.status(200).json({

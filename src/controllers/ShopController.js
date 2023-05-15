@@ -1,4 +1,5 @@
 
+import {getStorage, ref, getDownloadURL, uploadBytesResumable} from 'firebase/storage'
 import db from '../config/db.js';
 
 class ShopController {
@@ -58,6 +59,71 @@ class ShopController {
             res.status(500).json({
                 code: 'shop/getFood.error',
                 message: 'something went wrong',
+                error: error.message
+            });
+        }
+    }
+
+    checkShopName (req, res) {
+        try {
+            const shopName = req.body.shopName;
+            db.query('SELECT * FROM shop WHERE shop.name = ?', ([shopName]), (err, result) => {
+                if (err) throw err;
+                if (result.length) {
+                    res.status(409).json({
+                        code: 'shop/checkName.conflict',
+                        message: 'The name is already exists',
+                    })
+                } else {
+                    res.status(200).json({
+                        code: 'shop/checkName.success',
+                        message: 'The name is valid'
+                    });
+                }
+            })
+        } catch (error) {
+            res.status(500).json({
+                code: 'error',
+                message: 'Something went wrong',
+                error: error.message
+            });
+        }
+    }
+
+    async create (req, res) {
+        try {
+            const userId = req.user.id;
+            const storage = getStorage();
+            const storageRef1 = ref(storage, `shop_image/${req.files['avatar'][0].originalname}`);
+            const storageRef2 = ref(storage, `shop_background/${req.files['background'][0].originalname}`);
+            const snapshot1 = await uploadBytesResumable(storageRef1, req.files['avatar'][0].buffer);
+            const snapshot2 = await uploadBytesResumable(storageRef2, req.files['background'][0].buffer);
+            const name = req.body.name;
+            const address = req.body.address;
+            const shipFee = req.body.shipFee;
+            const timeShipping = req.body.timeShipping;
+
+            const avatar = await getDownloadURL(snapshot1.ref);
+            const background = await getDownloadURL(snapshot2.ref);
+
+            db.query('INSERT INTO `shop`(`userId`, `name`, `image`, `background`, `place`, `shipFee`, `timeShipping`) VALUES (?,?,?,?,?,?,?)', ([userId, name, avatar, background, address, shipFee, timeShipping]), (err, result) => {
+                if (err) throw err;
+                if (result) {
+                    res.status(200).json({
+                        code: 'shop/create.success',
+                        message: 'Success'
+                    })
+                } else {
+                    res.status(404).json({
+                        code: 'shop/create.notFound',
+                        message: 'dont found the user'
+                    })
+                }
+            })
+        } catch (error) {
+            res.status(500).json({
+                code: 'error',
+                message: 'Something went wrong',
                 error: error.message
             });
         }

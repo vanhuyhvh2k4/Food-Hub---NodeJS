@@ -1,4 +1,6 @@
-import express, { json } from 'express';
+import {initializeApp} from "firebase/app";
+import firebaseConfig from './config/firebase.js';
+import express from 'express';
 import cors from 'cors';
 const app = express();
 const port = 3000;
@@ -10,6 +12,9 @@ var corsOptions = {
   origin: 'http://localhost:8080',
   optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
 }
+
+// initial firebase
+initializeApp(firebaseConfig)
 
 app.use(cors(corsOptions));
 

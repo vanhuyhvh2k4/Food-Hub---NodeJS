@@ -1,6 +1,6 @@
 
 import {getStorage, ref, getDownloadURL, uploadBytesResumable} from 'firebase/storage'
-import db from '../config/db.js';
+import db from '../config/db.config.js';
 
 class ShopController {
 
@@ -64,6 +64,7 @@ class ShopController {
         }
     }
 
+    //[POST] baseUrl/shop/checkShopName
     checkShopName (req, res) {
         try {
             const shopName = req.body.shopName;

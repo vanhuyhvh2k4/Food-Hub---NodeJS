@@ -1,5 +1,5 @@
 import {initializeApp} from "firebase/app";
-import firebaseConfig from './config/firebase.js';
+import firebaseConfig from './config/firebase.config.js';
 import express from 'express';
 import cors from 'cors';
 const app = express();

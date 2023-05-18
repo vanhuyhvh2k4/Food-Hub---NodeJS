@@ -129,6 +129,53 @@ class ShopController {
             });
         }
     }
+
+    //[PATCH] baseUrl/changeLike/:shopId
+    changeLike (req, res) {
+        try {
+            const userId = req.user.id;
+            const shopId = req.params.shopId;
+            const status = req.body.statusLike;
+
+            if (status === true) {
+                db.query('DELETE FROM shop_like WHERE userId = ? AND shopId = ?', ([userId, shopId]), (err, result) => {
+                    if (err) throw err;
+                    if (result) {
+                        res.status(200).json({
+                            code: 'shop/changeLike.success',
+                            message: 'success'
+                        });
+                    } else {
+                        res.status(404).json({
+                            code: 'shop/changeLike.notFound',
+                            message: 'dont find the user of shop'
+                        });
+                    }
+                })
+            } else if (status === false) {
+                db.query('INSERT INTO shop_like (userId, shopId) VALUES (?, ?)', ([userId, shopId]), (err, result) => {
+                    if (err) throw err;
+                    if (result) {
+                        res.status(200).json({
+                            code: 'shop/changeLike.success',
+                            message: 'success'
+                        });
+                    } else {
+                        res.status(404).json({
+                            code: 'shop/changeLike.notFound',
+                            message: 'dont find the user of shop'
+                        });
+                    }
+                })
+            }
+        } catch (error) {
+            res.status(500).json({
+                code: 'shop/changeLike.error',
+                message: 'something went wrong',
+                error: error.message
+            });
+        }
+    }
 }
 
 export default new ShopController;

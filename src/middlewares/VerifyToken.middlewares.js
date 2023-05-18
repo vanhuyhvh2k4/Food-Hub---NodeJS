@@ -48,7 +48,7 @@ const verifyToken = {
                 }
             })
         } else {
-            res.json({
+            res.status(401).json({
                 code: 'Unauthorized',
                 message: 'You are not authenticated'
             })

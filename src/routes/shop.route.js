@@ -23,6 +23,8 @@ router.get('/getFood', verifyToken.verifyTokenJWT, ShopController.getFood);
 
 router.post('/checkShopName', verifyToken.verifyTokenJWT, ShopController.checkShopName);
 
-router.post('/create', verifyToken.verifyTokenJWT, upload.fields([{ name: 'avatar', maxCount: 1}, { name: 'background', maxCount: 1}]), multerErrorMiddleware, ShopController.create)
+router.post('/create', verifyToken.verifyTokenJWT, upload.fields([{ name: 'avatar', maxCount: 1}, { name: 'background', maxCount: 1}]), multerErrorMiddleware, ShopController.create);
+
+router.patch('/changeLike/:shopId', verifyToken.verifyTokenJWT, ShopController.changeLike);
 
 export default router;

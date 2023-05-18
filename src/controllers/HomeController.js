@@ -36,9 +36,8 @@ class HomeController {
     //[GET] baseURL/home/getUser
     getUser(req, res) {
         try {
-            const user = req.user;
-            const query2 = '';
-            db.query('SELECT id, fullName, avatar, email from user WHERE id = ?', [user.id], (err, result) => {
+            const userId = req.user.id;
+            db.query('SELECT id, fullName, avatar, email, phone, address from user WHERE id = ?', [userId], (err, result) => {
                 if (err) throw err;
                 if (result.length) {
                     res.status(200).json({

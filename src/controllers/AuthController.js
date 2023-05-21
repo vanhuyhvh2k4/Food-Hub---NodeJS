@@ -1,8 +1,9 @@
 import jwt from 'jsonwebtoken';
-import {getStorage, ref, getDownloadURL, uploadBytesResumable} from 'firebase/storage'
+import {getStorage, ref, getDownloadURL, uploadBytesResumable, deleteObject} from 'firebase/storage'
 import db from '../config/db.config.js';
 import JWTUntils from '../lib/jwt.js';
 import md5 from 'md5';
+import path from 'path'
 
 class AuthControlller {
   //[POST] BaseURL/auth/register
@@ -96,9 +97,19 @@ class AuthControlller {
     try {
       const storage = getStorage();
       const userId = req.user.id;
+
+      const user = await db.promise().query('SELECT avatar FROM user WHERE id = ?', [userId]);
+      const oldAvatarUrl = user[0].avatar;
+      const hasOldAvatar = !!oldAvatarUrl;
+
+      if (hasOldAvatar) {
+        // Delete old image with same name
+        const oldStorageRef = ref(storage, `user_avatar/${userId + path.extname(req.file.originalname)}`);
+        await deleteObject(oldStorageRef);
+      }
       
       //upload new image
-      const storageReft = ref(storage, `user_avatar/${req.file.originalname}`);
+      const storageReft = ref(storage, `user_avatar/${userId + path.extname(req.file.originalname)}`);
       const snapshot = await uploadBytesResumable(storageReft, req.file.buffer);
       const url = await getDownloadURL(snapshot.ref);
 
@@ -125,7 +136,7 @@ class AuthControlller {
     }
   }
 
-  //[PATCH] baseUrl/auth/changeProfile/:userId
+  //[PUT] baseUrl/auth/changeProfile/:userId
   changeProfile (req, res) {
     try {
       const userId = req.user.id;

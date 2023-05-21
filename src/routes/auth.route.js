@@ -4,6 +4,7 @@ const router = express.Router();
 import authController from '../controllers/AuthController.js';
 import authMiddleware from '../middlewares/Auth.middlewre.js';
 import verifyToken from '../middlewares/VerifyToken.middlewares.js';
+import multerErrorMiddleware from '../middlewares/MulterError.middleware.js';
 
 const fileFilter = (req, file, cb) => {
     if (file.mimetype === 'image/jpeg' || file.mimetype === 'image/png' || file.mimetype === 'image/webp') {
@@ -23,7 +24,7 @@ router.post('/login', authController.login);
 
 router.post('/refreshToken', authController.refreshToken);
 
-router.patch('/changeAvatar/:userId', verifyToken.verifyTokenJWT, upload.single('avatar'), authController.changeAvatar);
+router.patch('/changeAvatar/:userId', verifyToken.verifyTokenJWT, upload.single('avatar'), multerErrorMiddleware, authController.changeAvatar);
 
-router.patch('/changeProfile/:userId', verifyToken.verifyTokenJWT, authController.changeProfile);
+router.put('/changeProfile/:userId', verifyToken.verifyTokenJWT, authController.changeProfile);
 export default router;

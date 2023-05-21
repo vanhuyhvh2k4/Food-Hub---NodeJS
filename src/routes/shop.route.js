@@ -27,4 +27,6 @@ router.post('/create', verifyToken.verifyTokenJWT, upload.fields([{ name: 'avata
 
 router.patch('/changeLike/:shopId', verifyToken.verifyTokenJWT, ShopController.changeLike);
 
+router.get('/checkHasShop', verifyToken.verifyTokenJWT, ShopController.checkHasShop);
+
 export default router;

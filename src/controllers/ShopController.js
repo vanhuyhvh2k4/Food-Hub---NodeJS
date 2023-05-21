@@ -1,5 +1,6 @@
 
-import {getStorage, ref, getDownloadURL, uploadBytesResumable} from 'firebase/storage'
+import {getStorage, ref, getDownloadURL, uploadBytesResumable, deleteObject} from 'firebase/storage';
+import path from 'path';
 import db from '../config/db.config.js';
 
 class ShopController {
@@ -95,8 +96,10 @@ class ShopController {
         try {
             const userId = req.user.id;
             const storage = getStorage();
-            const storageRef1 = ref(storage, `shop_image/${req.files['avatar'][0].originalname}`);
-            const storageRef2 = ref(storage, `shop_background/${req.files['background'][0].originalname}`);
+            const storageRef1 = ref(storage, `shop_image/${userId + path.extname(req.files['avatar'][0].originalname)}`);
+            const storageRef2 = ref(storage, `shop_background/${userId + path.extname(req.files['background'][0].originalname)}`);
+
+            //upload the image
             const snapshot1 = await uploadBytesResumable(storageRef1, req.files['avatar'][0].buffer);
             const snapshot2 = await uploadBytesResumable(storageRef2, req.files['background'][0].buffer);
             const name = req.body.name;
@@ -171,6 +174,39 @@ class ShopController {
         } catch (error) {
             res.status(500).json({
                 code: 'shop/changeLike.error',
+                message: 'something went wrong',
+                error: error.message
+            });
+        }
+    }
+
+    //[GET] baseUrl/shop/checkHasShop
+    checkHasShop (req, res) {
+        try {
+            const userId = req.user.id;
+
+            db.query('SELECT IF(shop.id IS null, 0, 1) as hasShop FROM user LEFT JOIN shop ON shop.userId = user.id WHERE user.id = ?', ([userId]), (err, result) => {
+                if (err) throw err;
+                if (result[0].hasShop === 1) {
+                    res.status(200).json({
+                        code: 'shop/checkHasShop.success.found',
+                        message: 'this user has shop'
+                    });
+                } else if (result[0].hasShop === 0) {
+                    res.status(200).json({
+                        code: 'shop/checkHasShop.success.notFound',
+                        message: 'this user does not have shop'
+                    });
+                } else {
+                    res.status(404).json({
+                        code: 'shop/checkHasShop.notFound',
+                        message: 'dont find the user'
+                    });
+                }
+            })
+        } catch (error) {
+            res.status(500).json({
+                code: 'shop/checkHasShop.error',
                 message: 'something went wrong',
                 error: error.message
             });

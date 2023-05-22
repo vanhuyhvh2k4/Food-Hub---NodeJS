@@ -4,18 +4,23 @@ import db from '../config/db.config.js';
 
 class FoodController {
     //[GET] baseURL/food/getFood
-    getFood (req, res) {
+    async getFood (req, res) {
         try {
             const foodName = req.query.foodName;
             const shopName = req.query.shopName;
+            
+            const numOfFood = await db.promise().query('SELECT COUNT(food_item.id) AS num FROM food_item JOIN shop ON shop.id = food_item.shopId WHERE shop.name = ?', [shopName]);
 
-            db.query('SELECT food_item.id, food_item.name, food_item.image, food_item.description,food_item.price FROM food_item JOIN shop ON shop.id = food_item.shopId WHERE food_item.name = ? AND shop.name = ?', ([foodName, shopName]), (err, result) => {
+            db.query('SELECT shop.name AS shopName, shop.image AS shopImage, shop.place, shop.isTick, food_item.id, food_item.name, food_item.image, food_item.description,food_item.price FROM food_item JOIN shop ON shop.id = food_item.shopId WHERE food_item.name = ? AND shop.name = ?', ([foodName, shopName]), (err, result) => {
                 if (err) throw err;
                 if (result.length) {
                     res.status(200).json({
                         code: 'food/getFood.success',
                         message: 'success',
-                        data: result[0]
+                        data: {
+                            ...result[0],
+                            num: numOfFood[0][0].num
+                        }
                     });
                 } else {
                     res.status(404).json({

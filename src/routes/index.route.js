@@ -4,7 +4,7 @@ import shopRouter from './shop.route.js';
 import foodRouter from './food.route.js';
 import favoriteRouter from './favorite.route.js';
 import passwordRouter from './password.route.js';
-import checkoutRouter from './checkout.js';
+import checkoutRouter from './checkout.route.js';
 const baseURL = process.env.BASE_URL;
 
 function route (app) {

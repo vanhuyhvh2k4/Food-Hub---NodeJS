@@ -127,7 +127,7 @@ class CheckoutController {
     getBill (req, res) {
         try {
             const cartId = req.query.cartId;
-            db.query('SELECT cart.id, food_item.name, food_item.image, food_item.price, cart.quantity, shop.shipFee FROM cart JOIN food_item ON food_item.id = cart.foodId JOIN shop ON shop.id = food_item.shopId WHERE cart.id = ?', [cartId], (err, result) => {
+            db.query('SELECT cart.id, food_item.id AS foodId, food_item.name, food_item.image, food_item.price, cart.quantity, shop.shipFee FROM cart JOIN food_item ON food_item.id = cart.foodId JOIN shop ON shop.id = food_item.shopId WHERE cart.id = ?', [cartId], (err, result) => {
                 if (err) throw err;
                 if (result.length) {
                     const totalOfFood = result[0].price * result[0].quantity;
@@ -159,6 +159,45 @@ class CheckoutController {
                 message: 'something went wrong',
                 error: error.message
             });
+        }
+    }
+
+    //[POST] baseUrl/checkout/order
+    async order (req, res) {
+        try {
+            const cartId = req.body.cartId;
+            const userId = req.user.id;
+            const foodId = req.body.foodId;
+            const quantity = req.body.quantity;
+
+            const date = new Date();
+            const year = date.getFullYear();
+            const month = date.getMonth() + 1;
+            const day = date.getDate();
+            const hours = date.getHours();
+            const minutes = date.getMinutes();
+            const seconds = date.getSeconds();
+            const time = hours + '/' + minutes + '/' + seconds + '/' + day + '/' + month + '/' + year;
+
+            await db.promise().query('DELETE FROM cart WHERE id = ? AND userId = ?', ([cartId, userId]));
+
+            db.query('INSERT INTO food_order(userId, foodId, quantity, timestamp) VALUES (?, ?, ?, ?)', ([userId, foodId, quantity, time]), (err, result) => {
+                if (err) throw err;
+                if (result) {
+                    res.status(200).json({
+                        data: {
+                            code: 'checkout/order.success',
+                            message: 'order successfully'
+                        }
+                    })
+                }
+            })
+        } catch (error) {
+            res.status(500).json({
+                code: 'checkout/order.error',
+                message: 'something went wrong',
+                error: error.message
+            })
         }
     }
 }

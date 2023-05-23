@@ -13,4 +13,6 @@ router.delete('/deleteCart/:cartId', verifyToken.verifyTokenJWT, CheckoutControl
 
 router.get('/getBill', verifyToken.verifyTokenJWT, CheckoutController.getBill);
 
+router.post('/order', verifyToken.verifyTokenJWT, CheckoutController.order);
+
 export default router;

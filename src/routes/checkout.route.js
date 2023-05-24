@@ -2,6 +2,7 @@ import express from 'express';
 const router = express.Router();
 import verifyToken from '../middlewares/VerifyToken.middlewares.js';
 import CheckoutController from '../controllers/CheckoutController.js';
+import checkStatusOfOrder from '../middlewares/CheckStatusOfOrder.middleware.js';
 
 router.post('/cart', verifyToken.verifyTokenJWT, CheckoutController.addCart);
 
@@ -16,5 +17,7 @@ router.get('/bill', verifyToken.verifyTokenJWT, CheckoutController.getBill);
 router.post('/order', verifyToken.verifyTokenJWT, CheckoutController.order);
 
 router.get('/order', verifyToken.verifyTokenJWT, CheckoutController.myOrder);
+
+router.delete('/order/:orderId', verifyToken.verifyTokenJWT, checkStatusOfOrder, CheckoutController.cancel);
 
 export default router;

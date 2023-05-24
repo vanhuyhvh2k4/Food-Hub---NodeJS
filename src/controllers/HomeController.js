@@ -26,7 +26,7 @@ class HomeController {
         } catch (error) {
             res.status(500).json({
                 code: 'home/getUser.error',
-                message: 'something went wrong',
+
                 error: error.message
             })
         }
@@ -58,14 +58,14 @@ class HomeController {
         } catch (error) {
             res.status(500).json({
                 code: 'home/getUser.error',
-                message: 'something went wrong',
+
                 error: error.message
             })
         }
     }
 
     //[GET] baseURL/home/food
-    getFood (req, res) {
+    getFood(req, res) {
         try {
             const userId = req.user.id;
             const foodType = req.query.foodType;
@@ -75,7 +75,7 @@ class HomeController {
                 if (result.length) {
                     res.status(200).json({
                         code: 'home/getFood.success',
-                        message : 'Success',
+                        message: 'Success',
                         data: {
                             foodList: result
                         }
@@ -90,7 +90,7 @@ class HomeController {
         } catch (error) {
             res.status(500).json({
                 code: 'home/getUser.error',
-                message: 'something went wrong',
+
                 error: error.message
             })
         }

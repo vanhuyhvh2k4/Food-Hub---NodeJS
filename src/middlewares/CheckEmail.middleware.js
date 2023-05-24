@@ -5,7 +5,7 @@ export const checkEmail = {
 
         try {
             const clientEmail = req.body.email;
-    
+
             db.query('SELECT * FROM user WHERE email = ?', ([clientEmail]), (err, user) => {
                 if (err) throw err;
                 if (user.length) {
@@ -20,7 +20,7 @@ export const checkEmail = {
         } catch (error) {
             res.status(500).json({
                 code: 'middleware/checkhHasMail.error',
-                message: 'something went wrong',
+
                 error: error.message
             })
         }

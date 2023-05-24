@@ -1,14 +1,19 @@
-import {getStorage, ref, uploadBytesResumable, getDownloadURL} from 'firebase/storage'
+import {
+    getStorage,
+    ref,
+    uploadBytesResumable,
+    getDownloadURL
+} from 'firebase/storage'
 import path from 'path';
 import db from '../config/db.config.js';
 
 class FoodController {
     //[GET] baseURL/food/info
-    async getFood (req, res) {
+    async getFood(req, res) {
         try {
             const foodName = req.query.foodName;
             const shopName = req.query.shopName;
-            
+
             const numOfFood = await db.promise().query('SELECT COUNT(food_item.id) AS num FROM food_item JOIN shop ON shop.id = food_item.shopId WHERE shop.name = ?', [shopName]);
 
             db.query('SELECT shop.name AS shopName, shop.image AS shopImage, shop.place, shop.isTick, food_item.id, food_item.name, food_item.image, food_item.description,food_item.price FROM food_item JOIN shop ON shop.id = food_item.shopId WHERE food_item.name = ? AND shop.name = ?', ([foodName, shopName]), (err, result) => {
@@ -32,14 +37,14 @@ class FoodController {
         } catch (error) {
             res.status(500).json([{
                 code: 'food/getFood.error',
-                message: 'something went wrong',
+
                 error: error.message
             }])
         }
     }
 
     //[PATCH] baseUrl/food/like/:foodId
-    changeLike (req, res) {
+    changeLike(req, res) {
         try {
             const userId = req.user.id;
             const foodId = req.params.foodId;
@@ -79,14 +84,14 @@ class FoodController {
         } catch (error) {
             res.status(500).json({
                 code: 'food/changeLike.error',
-                message: 'something went wrong',
+
                 error: error.message
             });
         }
     }
 
     //[POST] baseUrl/food/food
-    async newFood (req, res) {
+    async newFood(req, res) {
         try {
             const userId = req.user.id;
             const name = req.body.name;
@@ -98,7 +103,7 @@ class FoodController {
 
             //get shop id
             const shopId = await db.promise().query('SELECT shop.id FROM shop JOIN user ON user.id = shop.userId WHERE user.id = ?', [userId])
-    
+
             // //upload
             const snapshot = await uploadBytesResumable(storageRef, req.file.buffer);
             const url = await getDownloadURL(snapshot.ref);
@@ -120,14 +125,14 @@ class FoodController {
         } catch (error) {
             res.status(500).json({
                 code: 'food/newFood.error',
-                message: 'something went wrong',
+
                 error: error.message
             })
         }
     }
 
     //[GET] baseURL/food/favorite
-    getFavoriteFood (req, res) {
+    getFavoriteFood(req, res) {
         try {
             const userId = req.user.id;
 
@@ -151,7 +156,7 @@ class FoodController {
         } catch (error) {
             res.status(500).json({
                 code: 'favorite/getFoodFavorite.error',
-                message: 'Something went wrong',
+
                 error: error.message
             })
         }

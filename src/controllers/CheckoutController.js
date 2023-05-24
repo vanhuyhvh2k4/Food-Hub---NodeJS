@@ -3,7 +3,7 @@ import db from "../config/db.config.js";
 class CheckoutController {
 
     //[POST] baseUrl/checkout/cart
-    addCart (req, res) {
+    addCart(req, res) {
         try {
             const userId = req.user.id;
             const foodId = req.body.foodId;
@@ -22,14 +22,14 @@ class CheckoutController {
         } catch (error) {
             res.status(500).json({
                 code: 'checkout/addCart.error',
-                message: 'something went wrong',
+
                 error: error.message
             })
         }
     }
 
     //[GET] baseUrl/checkout/number
-    getNumber (req, res) {
+    getNumber(req, res) {
         try {
             const userId = req.user.id;
 
@@ -53,14 +53,14 @@ class CheckoutController {
         } catch (error) {
             res.status(500).json({
                 code: 'checkout/getNumber.error',
-                message: 'something went wrong',
+
                 error: error.message
             });
         }
     }
 
     //[GET] baseUrl/checkout/cart
-    getCart (req, res) {
+    getCart(req, res) {
         try {
             const userId = req.user.id;
 
@@ -86,14 +86,14 @@ class CheckoutController {
         } catch (error) {
             res.status(500).json({
                 code: 'checkout/getCart.error',
-                message: 'something went wrong',
+
                 error: error.message
             })
         }
     }
 
     //[DELETE] baseUrl/checkout/cart/:cartId
-    deleteCart (req, res) {
+    deleteCart(req, res) {
         try {
             const userId = req.user.id;
             const cartId = req.params.cartId;
@@ -117,14 +117,14 @@ class CheckoutController {
         } catch (error) {
             res.status(500).json({
                 code: 'checkout/deleteCart.error',
-                message: 'something went wrong',
+
                 error: error.message
             });
         }
     }
 
     //[GET] baseUrl/checkout/bill
-    getBill (req, res) {
+    getBill(req, res) {
         try {
             const cartId = req.query.cartId;
             db.query('SELECT cart.id, food_item.id AS foodId, food_item.name, food_item.image, food_item.price, cart.quantity, shop.shipFee FROM cart JOIN food_item ON food_item.id = cart.foodId JOIN shop ON shop.id = food_item.shopId WHERE cart.id = ?', [cartId], (err, result) => {
@@ -156,14 +156,14 @@ class CheckoutController {
         } catch (error) {
             res.status(500).json({
                 code: 'checkout/getBill.error',
-                message: 'something went wrong',
+
                 error: error.message
             });
         }
     }
 
     //[POST] baseUrl/checkout/order
-    async order (req, res) {
+    async order(req, res) {
         try {
             const cartId = req.body.cartId;
             const userId = req.user.id;
@@ -195,18 +195,18 @@ class CheckoutController {
         } catch (error) {
             res.status(500).json({
                 code: 'checkout/order.error',
-                message: 'something went wrong',
+
                 error: error.message
             })
         }
     }
 
     //[GET] baseUrl/checkout/order
-    myOrder (req, res) {
+    myOrder(req, res) {
         try {
             const userId = req.user.id;
 
-            db.query('SELECT food_order.id, food_item.name, food_item.image, food_item.price, shop.name AS shopName, shop.isTick, food_order.status, food_order.quantity FROM food_order JOIN food_item ON food_item.id = food_order.foodId JOIN shop ON shop.id = food_item.shopId WHERE food_order.userId = ?', ([userId]), (err, result) => {
+            db.query('SELECT food_order.id, food_item.name, food_item.image, food_item.price, shop.name AS shopName, shop.isTick, food_order.status, food_order.quantity FROM food_order JOIN food_item ON food_item.id = food_order.foodId JOIN shop ON shop.id = food_item.shopId WHERE food_order.userId = ? AND food_order.status != "canceled"', ([userId]), (err, result) => {
                 if (err) throw err;
                 if (result.length) {
                     res.status(200).json({
@@ -226,9 +226,40 @@ class CheckoutController {
         } catch (error) {
             res.status(500).json({
                 code: 'checkout/myOrder.error',
-                message: 'something went wrong',
+
                 error: error.message
             })
+        }
+    }
+
+    //[DELETE] baseUrl/checkout/order/:orderId
+    cancel(req, res) {
+        try {
+            const orderId = req.params.orderId;
+
+            db.query('UPDATE food_order SET status = "canceled" WHERE id = ?', [orderId], (err, result) => {
+                if (err) throw err;
+                if (result) {
+                    res.status(200).json({
+                        data: {
+                            code: 'checkout/cancel.success',
+                            message: 'canceled successfully'
+                        }
+                    });
+                } else {
+                    res.status(404).json({
+                        data: {
+                            code: 'checkout/cancel.notFound',
+                            message: 'not found userId or user is not order'
+                        }
+                    });
+                }
+            })
+        } catch (error) {
+            res.status(500).json({
+                code: 'checkout/cancel.error',
+                error: error.message
+            });
         }
     }
 }

@@ -1,15 +1,20 @@
-
-import {getStorage, ref, getDownloadURL, uploadBytesResumable, deleteObject} from 'firebase/storage';
+import {
+    getStorage,
+    ref,
+    getDownloadURL,
+    uploadBytesResumable,
+    deleteObject
+} from 'firebase/storage';
 import path from 'path';
 import db from '../config/db.config.js';
 
 class ShopController {
 
     //[GET] baseURL/shop/info
-    getInfo (req, res) {
+    getInfo(req, res) {
         try {
             const shopName = req.query.shopName;
-    
+
             db.query('SELECT shop.id, shop.name, shop.image, shop.background, shop.place, shop.isTick, COUNT(food_item.id) as quantity FROM food_item JOIN shop ON shop.id = food_item.shopId WHERE shop.name = ?', ([shopName]), (err, result) => {
                 if (err) throw err;
                 if (result.length) {
@@ -22,20 +27,20 @@ class ShopController {
                     res.status(404).json({
                         code: 'shop/getInfo.dontFound',
                         message: 'No shop found',
-                    });   
+                    });
                 }
             })
         } catch (error) {
             res.status(500).json({
                 code: 'shop/getInfo.error',
-                message: 'something went wrong',
+
                 error: error.message
             })
         }
     }
-    
+
     //[GET] baseURL/shop/food
-    getFood (req, res) {
+    getFood(req, res) {
         try {
             const userId = req.user.id;
             const shopName = req.query.shopName;
@@ -59,14 +64,14 @@ class ShopController {
         } catch (error) {
             res.status(500).json({
                 code: 'shop/getFood.error',
-                message: 'something went wrong',
+
                 error: error.message
             });
         }
     }
 
     //[POST] baseUrl/shop/checkShopName
-    checkShopName (req, res) {
+    checkShopName(req, res) {
         try {
             const shopName = req.body.shopName;
             db.query('SELECT * FROM shop WHERE shop.name = ?', ([shopName]), (err, result) => {
@@ -86,14 +91,14 @@ class ShopController {
         } catch (error) {
             res.status(500).json({
                 code: 'error',
-                message: 'Something went wrong',
+
                 error: error.message
             });
         }
     }
 
     //[POST] baseUrl/shop/shop
-    async create (req, res) {
+    async create(req, res) {
         try {
             const userId = req.user.id;
             const storage = getStorage();
@@ -128,14 +133,14 @@ class ShopController {
         } catch (error) {
             res.status(500).json({
                 code: 'error',
-                message: 'Something went wrong',
+
                 error: error.message
             });
         }
     }
 
     //[PATCH] baseUrl/like/:shopId
-    changeLike (req, res) {
+    changeLike(req, res) {
         try {
             const userId = req.user.id;
             const shopId = req.params.shopId;
@@ -175,14 +180,14 @@ class ShopController {
         } catch (error) {
             res.status(500).json({
                 code: 'shop/changeLike.error',
-                message: 'something went wrong',
+
                 error: error.message
             });
         }
     }
 
     //[GET] baseUrl/shop/checkHasShop
-    checkHasShop (req, res) {
+    checkHasShop(req, res) {
         try {
             const userId = req.user.id;
 
@@ -208,14 +213,14 @@ class ShopController {
         } catch (error) {
             res.status(500).json({
                 code: 'shop/checkHasShop.error',
-                message: 'something went wrong',
+
                 error: error.message
             });
         }
     }
 
     //[GET] baseUrl/shop/favorite
-    getFavoriteShop (req, res) {
+    getFavoriteShop(req, res) {
         try {
             const userId = req.user.id;
             db.query('SELECT shop.id, shop.name, shop.image, shop.isTick, shop.shipFee, shop.timeShipping FROM shop JOIN shop_like ON shop_like.shopId = shop.id JOIN user ON user.id = shop_like.userId WHERE shop_like.userId = ?', ([userId]), (err, result) => {
@@ -238,7 +243,7 @@ class ShopController {
         } catch (error) {
             res.status(500).json({
                 code: 'favorite/getFavoriteShop.error',
-                message: 'Something went wrong',
+
                 error: error.message
             })
         }

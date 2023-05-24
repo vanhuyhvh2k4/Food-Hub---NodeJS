@@ -138,7 +138,7 @@ class AuthControlller {
     } catch (error) {
       res.status(500).json({
         code: 'auth/changeAvatar.error',
-        message: 'something went wrong',
+
         error: error.message
       })
     }
@@ -169,7 +169,7 @@ class AuthControlller {
     } catch (error) {
       res.status(500).json({
         code: 'auth/changeProfile.error',
-        message: 'something went wrong',
+
         error: error.message
       })
     }
@@ -216,7 +216,7 @@ class AuthControlller {
     } catch (error) {
       res.status(500).json({
         code: 'password/sendMail.error',
-        message: 'something went wrong',
+
         error: error.message
       })
     }
@@ -246,7 +246,7 @@ class AuthControlller {
     } catch (error) {
       res.status(500).json({
         code: 'password/reset.error',
-        message: 'something went wrong',
+
         error: error.message
       });
     }

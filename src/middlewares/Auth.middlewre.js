@@ -20,7 +20,7 @@ const authMiddleware = {
         } catch (error) {
             res.status(500).json({
                 code: 'auth/checkEmail.error',
-                message: 'Something went wrong',
+
                 error: error
             })
         }

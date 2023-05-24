@@ -3,7 +3,7 @@ import path from 'path';
 import db from '../config/db.config.js';
 
 class FoodController {
-    //[GET] baseURL/food/getFood
+    //[GET] baseURL/food/info
     async getFood (req, res) {
         try {
             const foodName = req.query.foodName;
@@ -38,7 +38,7 @@ class FoodController {
         }
     }
 
-    //[PATCH] baseUrl/food/changeLike/:foodId
+    //[PATCH] baseUrl/food/like/:foodId
     changeLike (req, res) {
         try {
             const userId = req.user.id;
@@ -85,7 +85,7 @@ class FoodController {
         }
     }
 
-    //[POST] baseUrl/food/newFood
+    //[POST] baseUrl/food/food
     async newFood (req, res) {
         try {
             const userId = req.user.id;
@@ -125,34 +125,35 @@ class FoodController {
             })
         }
     }
-    
-    //[GET] baseUrl/search/result
-    result (req, res) {
+
+    //[GET] baseURL/food/favorite
+    getFavoriteFood (req, res) {
         try {
             const userId = req.user.id;
-            const keyword = req.query.keyword;
-            
-            db.query('SELECT food_item.id, shop.name AS shopName, shop.place, food_item.name, food_item.image, food_item.description, food_item.price, IF (food_like.id IS null, 0, 1) as liked FROM food_item JOIN shop ON shop.id = food_item.shopId LEFT JOIN food_like ON food_like.foodId = food_item.id AND food_like.userId = ? WHERE food_item.name LIKE ?', ([userId,`%${keyword}%`]), (err, result) => {
+
+            db.query('SELECT food_item.id, shop.name AS shopName, food_item.name, food_item.image, food_item.description, food_item.price FROM food_item JOIN food_like ON food_like.foodId = food_item.id JOIN user ON user.id = food_like.userId JOIN shop ON food_item.shopId = shop.id WHERE user.id = ?', ([userId]), (err, result) => {
                 if (err) throw err;
                 if (result.length) {
                     res.status(200).json({
-                        code: 'food/searchResult.success',
-                        message: 'search result successfully',
-                        data: result
+                        code: 'favorite/getFoodFavorite.success',
+                        message: 'Success',
+                        data: {
+                            foodList: result
+                        }
                     })
                 } else {
                     res.status(404).json({
-                        code: 'food/searchResult.notFound',
-                        message: 'search result not found'
+                        code: 'favorite/getFoodFavorite.notFound',
+                        message: 'Not Found any food'
                     })
                 }
             })
         } catch (error) {
             res.status(500).json({
-                code: 'food/searchResult.error',
-                message: 'something went wrong',
+                code: 'favorite/getFoodFavorite.error',
+                message: 'Something went wrong',
                 error: error.message
-            });
+            })
         }
     }
 }

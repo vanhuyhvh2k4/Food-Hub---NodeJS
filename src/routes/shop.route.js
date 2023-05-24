@@ -17,16 +17,18 @@ const fileFilter = (req, file, cb) => {
 
 const upload = multer({storage: multer.memoryStorage(), fileFilter})
 
-router.get('/getInfo', ShopController.getInfo);
+router.get('/info', ShopController.getInfo);
 
-router.get('/getFood', verifyToken.verifyTokenJWT, ShopController.getFood);
+router.get('/food', verifyToken.verifyTokenJWT, ShopController.getFood);
 
 router.post('/checkShopName', verifyToken.verifyTokenJWT, ShopController.checkShopName);
 
-router.post('/create', verifyToken.verifyTokenJWT, upload.fields([{ name: 'avatar', maxCount: 1}, { name: 'background', maxCount: 1}]), multerErrorMiddleware, ShopController.create);
+router.post('/shop', verifyToken.verifyTokenJWT, upload.fields([{ name: 'avatar', maxCount: 1}, { name: 'background', maxCount: 1}]), multerErrorMiddleware, ShopController.create);
 
-router.patch('/changeLike/:shopId', verifyToken.verifyTokenJWT, ShopController.changeLike);
+router.patch('/like/:shopId', verifyToken.verifyTokenJWT, ShopController.changeLike);
 
 router.get('/checkHasShop', verifyToken.verifyTokenJWT, ShopController.checkHasShop);
+
+router.get('/favorite', verifyToken.verifyTokenJWT, ShopController.getFavoriteShop);
 
 export default router;

@@ -2,38 +2,7 @@ import db from '../config/db.config.js';
 
 class HomeController {
 
-    //[POST]baseURL/home/search
-    search(req, res) {
-        try {
-            const foodName = req.body.foodName;
-            if (foodName.length) {
-                db.query('SELECT id, name, image FROM food_item WHERE name LIKE ? GROUP BY name', [`%${foodName}%`], (err, result) => {
-                    if (err) throw err;
-
-                    if (!result.length) {
-                        res.status(404).json({
-                            code: 'home/search.notFound',
-                            message: 'No results found'
-                        })
-                    } else {
-                        res.status(200).json({
-                            code: 'home/search.success',
-                            message: 'Success',
-                            data: result
-                        })
-                    }
-                });
-            }
-        } catch (error) {
-            res.status(500).json({
-                code: 'home/search.error',
-                message: 'something went wrong',
-                error: error.message
-            })
-        }
-    }
-
-    //[GET] baseURL/home/getUser
+    //[GET] baseURL/home/user
     getUser(req, res) {
         try {
             const userId = req.user.id;
@@ -63,7 +32,7 @@ class HomeController {
         }
     }
 
-    //[GET] baseURL/home/getShop
+    //[GET] baseURL/home/shop
     getShop(req, res) {
         try {
             const userId = req.user.id;
@@ -95,7 +64,7 @@ class HomeController {
         }
     }
 
-    //[GET] baseURL/home/getFood
+    //[GET] baseURL/home/food
     getFood (req, res) {
         try {
             const userId = req.user.id;

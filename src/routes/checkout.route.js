@@ -5,14 +5,16 @@ import CheckoutController from '../controllers/CheckoutController.js';
 
 router.post('/cart', verifyToken.verifyTokenJWT, CheckoutController.addCart);
 
-router.get('/getNumber', verifyToken.verifyTokenJWT, CheckoutController.getNumber);
+router.get('/number', verifyToken.verifyTokenJWT, CheckoutController.getNumber);
 
-router.get('/getCart', verifyToken.verifyTokenJWT, CheckoutController.getCart);
+router.get('/cart', verifyToken.verifyTokenJWT, CheckoutController.getCart);
 
-router.delete('/deleteCart/:cartId', verifyToken.verifyTokenJWT, CheckoutController.deleteCart);
+router.delete('/cart/:cartId', verifyToken.verifyTokenJWT, CheckoutController.deleteCart);
 
-router.get('/getBill', verifyToken.verifyTokenJWT, CheckoutController.getBill);
+router.get('/bill', verifyToken.verifyTokenJWT, CheckoutController.getBill);
 
 router.post('/order', verifyToken.verifyTokenJWT, CheckoutController.order);
+
+router.get('/order', verifyToken.verifyTokenJWT, CheckoutController.myOrder);
 
 export default router;

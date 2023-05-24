@@ -17,13 +17,13 @@ const fileFilter = (req, file, cb) => {
 
 const upload = multer({storage: multer.memoryStorage(), fileFilter});
 
-router.get('/getFood', FoodController.getFood);
+router.get('/info', FoodController.getFood);
 
-router.patch('/changeLike/:foodId', verifyToken.verifyTokenJWT, FoodController.changeLike);
+router.patch('/like/:foodId', verifyToken.verifyTokenJWT, FoodController.changeLike);
 
-router.post('/newFood', verifyToken.verifyTokenJWT, upload.single('image'), multerErrorMiddleware, FoodController.newFood);
+router.post('/food', verifyToken.verifyTokenJWT, upload.single('image'), multerErrorMiddleware, FoodController.newFood);
 
-router.get('/search/result', verifyToken.verifyTokenJWT, FoodController.result);
+router.get('/favorite', verifyToken.verifyTokenJWT, FoodController.getFavoriteFood);
 
 export default router;
 

@@ -1,41 +1,49 @@
 import jwt from 'jsonwebtoken';
-import {getStorage, ref, getDownloadURL, uploadBytesResumable, deleteObject} from 'firebase/storage'
+import {
+  getStorage,
+  ref,
+  getDownloadURL,
+  uploadBytesResumable,
+  deleteObject
+} from 'firebase/storage'
 import db from '../config/db.config.js';
 import JWTUntils from '../lib/jwt.js';
 import md5 from 'md5';
 import path from 'path'
+import sendMail from '../utils/mailer.js';
+import 'dotenv/config';
 
 class AuthControlller {
   //[POST] BaseURL/auth/register
-  register (req, res) {
-      try {
-          const fullName = req.body.fullName;
-          const email = req.body.email;
-          const password = req.body.password;
-          const passwordHash = md5(password);
-          db.query(
-              'INSERT INTO user (fullName, email, password) VALUES (?, ?, ?)',
-              [fullName, email, passwordHash],
-              (error, results, fields) => {
-                if (error) {
-                  throw error;
-                }
-                res.status(200).json({
-                  code: 'auth/register.success',
-                  message: 'Your account has been registered'
-                })
-              }
-            );
-      } catch (error)  {
-          res.status(500).json({
-              code: 'auth/register.error',
-              error: error.message
+  register(req, res) {
+    try {
+      const fullName = req.body.fullName;
+      const email = req.body.email;
+      const password = req.body.password;
+      const passwordHash = md5(password);
+      db.query(
+        'INSERT INTO user (fullName, email, password) VALUES (?, ?, ?)',
+        [fullName, email, passwordHash],
+        (error, results, fields) => {
+          if (error) {
+            throw error;
+          }
+          res.status(200).json({
+            code: 'auth/register.success',
+            message: 'Your account has been registered'
           })
-      }
+        }
+      );
+    } catch (error) {
+      res.status(500).json({
+        code: 'auth/register.error',
+        error: error.message
+      })
+    }
   }
 
-    //[POST] BaseURL/auth/login
-  login (req, res) {
+  //[POST] BaseURL/auth/login
+  login(req, res) {
     try {
       const email = req.body.email;
       const password = req.body.password;
@@ -74,8 +82,8 @@ class AuthControlller {
     }
   }
 
-  //[POST] BaseURL/auth/refreshToken
-  refreshToken (req, res) {
+  //[POST] BaseURL/auth/token
+  refreshToken(req, res) {
     const refreshToken = req.body.refreshToken;
     if (!refreshToken) res.status(401).json('you are not authenticated');
     jwt.verify(refreshToken, process.env.JWT_REFRESHTOKEN_SECRET, (err, user) => {
@@ -92,8 +100,8 @@ class AuthControlller {
     })
   }
 
-  //[PATCH] baseUrl/auth/changeAvatar/:userId
-  async changeAvatar (req, res) {
+  //[PATCH] baseUrl/auth/profile/:userId
+  async changeAvatar(req, res) {
     try {
       const storage = getStorage();
       const userId = req.user.id;
@@ -107,7 +115,7 @@ class AuthControlller {
         const oldStorageRef = ref(storage, `user_avatar/${userId + path.extname(req.file.originalname)}`);
         await deleteObject(oldStorageRef);
       }
-      
+
       //upload new image
       const storageReft = ref(storage, `user_avatar/${userId + path.extname(req.file.originalname)}`);
       const snapshot = await uploadBytesResumable(storageReft, req.file.buffer);
@@ -136,8 +144,8 @@ class AuthControlller {
     }
   }
 
-  //[PUT] baseUrl/auth/changeProfile/:userId
-  changeProfile (req, res) {
+  //[PUT] baseUrl/auth/profile/:userId
+  changeProfile(req, res) {
     try {
       const userId = req.user.id;
       const fullName = req.body.fullName;
@@ -165,6 +173,84 @@ class AuthControlller {
         error: error.message
       })
     }
+  }
+
+  //[POST] baseURL/auth/password
+  sendMail(req, res) {
+    try {
+      const email = req.body.email;
+      const emailToken = JWTUntils.generateEmailToken(email);
+      sendMail(email, "Reset password", `
+        <div style="width: 100%; background-color: #fff;">
+    <header style="background-color: #333; padding: 12px; color: #fff; display: flex; justify-content: end;">
+        <span style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">VIEW IN BROWSER</span>
+    </header>
+    <main style="display: flex; flex-direction: column; align-items: center; padding: 32px;">
+        <div style="display: flex; align-items: center;">
+            <img style="width: 50px; height: 50px; flex-shrink: 0; object-fit: cover;"
+                src="https://th.bing.com/th/id/OIP.504ZOEY-quI4tFXyM-X0KgHaHa?pid=ImgDet&rs=1" alt="">
+            <h2 style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin-left: 6px;">FOOD HUB</h2>
+        </div>
+        <h1 style="text-align: center; font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif; text-transform: uppercase;">Easy ordering, fast delivery</h1>
+        <p style="text-align: justify; font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;">Hi,
+
+            You are receiving this email because you requested to reset the password for your account on <b>FOOD HUB</b>. Please click the link below to reset your password:
+            </p>
+        <a href="${process.env.APP_URL}/forgot/reset/${email}?token=${emailToken}" style="background-color: rgb(124, 124, 239); border: none; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none;">SET PASSWORD</a>
+        <p style="text-align: justify; font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;">
+            If you did not request to reset your password, please ignore this email. If you have any issues, please contact us for assistance.
+            Best regards, <br>
+            <b>FOOD HUB </b>
+        </p>
+        <hr width="100%" style="margin-top: 24px;">
+    </main>
+</div>
+        `)
+      // <a href="${process.env.APP_URL}/forgot/reset/${email}?token=${emailToken}">Reset password</a>
+      res.status(200).json({
+        code: 'password/sendMail.success',
+        message: 'we sent your email successfully',
+        from: process.env.USERNAME_MAIL,
+        to: email
+      })
+    } catch (error) {
+      res.status(500).json({
+        code: 'password/sendMail.error',
+        message: 'something went wrong',
+        error: error.message
+      })
+    }
+  }
+
+  //[GET] baseUrl/auth/password/:email
+  reset(req, res) {
+    try {
+      const email = req.params.email;
+      const newPassword = req.body.password;
+      const hashPassword = md5(newPassword);
+
+      db.query('UPDATE user SET password= ? WHERE user.email = ?', ([hashPassword, email]), (err, result) => {
+        if (err) throw err;
+        if (result) {
+          res.status(200).json({
+            code: 'password/reset.success',
+            message: 'changed your password successfully'
+          })
+        } else {
+          res.status(404).json({
+            code: 'password/reset.notFound',
+            message: 'email not found'
+          })
+        }
+      })
+    } catch (error) {
+      res.status(500).json({
+        code: 'password/reset.error',
+        message: 'something went wrong',
+        error: error.message
+      });
+    }
+
   }
 }
 

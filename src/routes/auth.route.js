@@ -5,6 +5,7 @@ import authController from '../controllers/AuthController.js';
 import authMiddleware from '../middlewares/Auth.middlewre.js';
 import verifyToken from '../middlewares/VerifyToken.middlewares.js';
 import multerErrorMiddleware from '../middlewares/MulterError.middleware.js';
+import CheckEmailMiddleware from '../middlewares/CheckEmail.middleware.js';
 
 const fileFilter = (req, file, cb) => {
     if (file.mimetype === 'image/jpeg' || file.mimetype === 'image/png' || file.mimetype === 'image/webp') {
@@ -22,9 +23,14 @@ router.post('/register', authMiddleware.checkEmail, authController.register);
 
 router.post('/login', authController.login);
 
-router.post('/refreshToken', authController.refreshToken);
+router.post('/token', authController.refreshToken);
 
-router.patch('/changeAvatar/:userId', verifyToken.verifyTokenJWT, upload.single('avatar'), multerErrorMiddleware, authController.changeAvatar);
+router.patch('/profile/:userId', verifyToken.verifyTokenJWT, upload.single('avatar'), multerErrorMiddleware, authController.changeAvatar);
 
-router.put('/changeProfile/:userId', verifyToken.verifyTokenJWT, authController.changeProfile);
+router.put('/profile/:userId', verifyToken.verifyTokenJWT, authController.changeProfile);
+
+router.post('/password', CheckEmailMiddleware.checkHasMail, authController.sendMail);
+
+router.patch('/password/:email', verifyToken.verifyTokenMail, authController.reset);
+
 export default router;

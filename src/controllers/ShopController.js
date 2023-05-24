@@ -5,7 +5,7 @@ import db from '../config/db.config.js';
 
 class ShopController {
 
-    //[GET] baseURL/shop/getInfo
+    //[GET] baseURL/shop/info
     getInfo (req, res) {
         try {
             const shopName = req.query.shopName;
@@ -34,7 +34,7 @@ class ShopController {
         }
     }
     
-    //[GET] baseURL/shop/getFood
+    //[GET] baseURL/shop/food
     getFood (req, res) {
         try {
             const userId = req.user.id;
@@ -92,6 +92,7 @@ class ShopController {
         }
     }
 
+    //[POST] baseUrl/shop/shop
     async create (req, res) {
         try {
             const userId = req.user.id;
@@ -133,7 +134,7 @@ class ShopController {
         }
     }
 
-    //[PATCH] baseUrl/changeLike/:shopId
+    //[PATCH] baseUrl/like/:shopId
     changeLike (req, res) {
         try {
             const userId = req.user.id;
@@ -210,6 +211,36 @@ class ShopController {
                 message: 'something went wrong',
                 error: error.message
             });
+        }
+    }
+
+    //[GET] baseUrl/shop/favorite
+    getFavoriteShop (req, res) {
+        try {
+            const userId = req.user.id;
+            db.query('SELECT shop.id, shop.name, shop.image, shop.isTick, shop.shipFee, shop.timeShipping FROM shop JOIN shop_like ON shop_like.shopId = shop.id JOIN user ON user.id = shop_like.userId WHERE shop_like.userId = ?', ([userId]), (err, result) => {
+                if (err) throw err;
+                if (result.length) {
+                    res.status(200).json({
+                        code: 'favorite/getFavoriteShop.success',
+                        message: 'Success',
+                        data: {
+                            shopList: result
+                        }
+                    })
+                } else {
+                    res.status(404).json({
+                        code: 'favorite/getFavorite.notFound',
+                        message: 'Not Found any shop'
+                    });
+                }
+            });
+        } catch (error) {
+            res.status(500).json({
+                code: 'favorite/getFavoriteShop.error',
+                message: 'Something went wrong',
+                error: error.message
+            })
         }
     }
 }

@@ -2,7 +2,7 @@ import db from "../config/db.config.js";
 
 class CheckoutController {
 
-    //[POSt] baseUrl/checkout/cart
+    //[POST] baseUrl/checkout/cart
     addCart (req, res) {
         try {
             const userId = req.user.id;
@@ -28,7 +28,7 @@ class CheckoutController {
         }
     }
 
-    //[GET] baseUrl/checkout/getNumber
+    //[GET] baseUrl/checkout/number
     getNumber (req, res) {
         try {
             const userId = req.user.id;
@@ -59,7 +59,7 @@ class CheckoutController {
         }
     }
 
-    //[GET] baseUrl/checkout/getCart
+    //[GET] baseUrl/checkout/cart
     getCart (req, res) {
         try {
             const userId = req.user.id;
@@ -92,7 +92,7 @@ class CheckoutController {
         }
     }
 
-    //[DELETE] baseUrl/checkout/deleteCart/:cartId
+    //[DELETE] baseUrl/checkout/cart/:cartId
     deleteCart (req, res) {
         try {
             const userId = req.user.id;
@@ -123,7 +123,7 @@ class CheckoutController {
         }
     }
 
-    //[GET] baseUrl/checkout/getBill
+    //[GET] baseUrl/checkout/bill
     getBill (req, res) {
         try {
             const cartId = req.query.cartId;
@@ -195,6 +195,37 @@ class CheckoutController {
         } catch (error) {
             res.status(500).json({
                 code: 'checkout/order.error',
+                message: 'something went wrong',
+                error: error.message
+            })
+        }
+    }
+
+    //[GET] baseUrl/checkout/order
+    myOrder (req, res) {
+        try {
+            const userId = req.user.id;
+
+            db.query('SELECT food_order.id, food_item.name, food_item.image, food_item.price, shop.name AS shopName, shop.isTick, food_order.status, food_order.quantity FROM food_order JOIN food_item ON food_item.id = food_order.foodId JOIN shop ON shop.id = food_item.shopId WHERE food_order.userId = ?', ([userId]), (err, result) => {
+                if (err) throw err;
+                if (result.length) {
+                    res.status(200).json({
+                        data: {
+                            code: 'checkout/myOrder.success',
+                            message: 'successfully',
+                            list: result
+                        }
+                    })
+                } else {
+                    res.status(404).json({
+                        code: 'checkout/myOrder.notFound',
+                        message: 'not found userId or user is not order'
+                    })
+                }
+            })
+        } catch (error) {
+            res.status(500).json({
+                code: 'checkout/myOrder.error',
                 message: 'something went wrong',
                 error: error.message
             })

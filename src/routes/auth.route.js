@@ -19,6 +19,8 @@ const fileFilter = (req, file, cb) => {
 
 const upload = multer({storage: multer.memoryStorage(), fileFilter})
 
+router.post('/', verifyToken.verifyTokenJWT, authController.verifyToken);
+
 router.post('/register', authMiddleware.checkEmail, authController.register);
 
 router.post('/login', authController.login);

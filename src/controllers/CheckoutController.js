@@ -170,18 +170,9 @@ class CheckoutController {
             const foodId = req.body.foodId;
             const quantity = req.body.quantity;
 
-            const date = new Date();
-            const year = date.getFullYear();
-            const month = date.getMonth() + 1;
-            const day = date.getDate();
-            const hours = date.getHours();
-            const minutes = date.getMinutes();
-            const seconds = date.getSeconds();
-            const time = hours + '/' + minutes + '/' + seconds + '/' + day + '/' + month + '/' + year;
-
             await db.promise().query('DELETE FROM cart WHERE id = ? AND userId = ?', ([cartId, userId]));
 
-            db.query('INSERT INTO food_order(userId, foodId, quantity, timestamp) VALUES (?, ?, ?, ?)', ([userId, foodId, quantity, time]), (err, result) => {
+            db.query('INSERT INTO food_order(userId, foodId, quantity, timestamp) VALUES (?, ?, ?, CURRENT_TIMESTAMP())', ([userId, foodId, quantity]), (err, result) => {
                 if (err) throw err;
                 if (result) {
                     res.status(200).json({
@@ -206,9 +197,10 @@ class CheckoutController {
         try {
             const userId = req.user.id;
 
-            db.query('SELECT food_order.id, food_item.name, food_item.image, food_item.price, shop.name AS shopName, shop.isTick, food_order.status, food_order.quantity FROM food_order JOIN food_item ON food_item.id = food_order.foodId JOIN shop ON shop.id = food_item.shopId WHERE food_order.userId = ? AND food_order.status != "canceled"', ([userId]), (err, result) => {
+            db.query('SELECT food_order.id, food_item.name, food_item.image, shop.name AS shopName, shop.isTick, food_order.status, food_order.quantity, ((food_order.quantity * food_item.price) + shop.shipFee) AS price FROM food_order JOIN food_item ON food_item.id = food_order.foodId JOIN shop ON shop.id = food_item.shopId WHERE food_order.userId = ? AND food_order.status != "canceled"', ([userId]), (err, result) => {
                 if (err) throw err;
                 if (result.length) {
+
                     res.status(200).json({
                         data: {
                             code: 'checkout/myOrder.success',
@@ -237,7 +229,7 @@ class CheckoutController {
         try {
             const orderId = req.params.orderId;
 
-            db.query('UPDATE food_order SET status = "canceled" WHERE id = ?', [orderId], (err, result) => {
+            db.query('UPDATE food_order SET status = "canceled", timestamp = CURRENT_TIMESTAMP() WHERE id = ?', ([orderId]), (err, result) => {
                 if (err) throw err;
                 if (result) {
                     res.status(200).json({
@@ -258,6 +250,98 @@ class CheckoutController {
         } catch (error) {
             res.status(500).json({
                 code: 'checkout/cancel.error',
+                error: error.message
+            });
+        }
+    }
+
+    //[GET] baseUrl/checkout/order/history
+    getOrderHistory(req, res) {
+        try {
+            const userId = req.user.id;
+
+            db.query('SELECT food_order.id, food_item.name, food_item.image, food_item.price, shop.name AS shopName, shop.shipFee, shop.isTick, food_order.status, food_order.quantity, food_order.timestamp FROM `food_order` JOIN food_item ON food_item.id = food_order.foodId JOIN shop ON shop.id = food_item.shopId WHERE food_order.userId = ? AND food_order.status IN ("canceled", "finished")', [userId], (err, results) => {
+                if (err) throw err;
+                if (results.length) {
+                    const response = results.map(item => {
+                        const id = item.id;
+                        const name = item.name;
+                        const image = item.image;
+                        const shopName = item.shopName;
+                        const isTick = item.isTick;
+                        const status = item.status;
+                        const quantity = item.quantity;
+                        const time = new Date(item.timestamp);
+                        const formatTime = time.toDateString().replace(',', '')
+                        const price = (quantity * item.price) + item.shipFee;
+                        return {
+                            id,
+                            name,
+                            image,
+                            shopName,
+                            quantity,
+                            isTick,
+                            status,
+                            time: formatTime,
+                            price
+                        }
+                    })
+
+                    res.status(200).json({
+                        data: {
+                            code: 'checkout/getOrderHisotry.success',
+                            list: response
+                        }
+                    });
+                } else {
+                    res.status(404).json({
+                        code: 'checkout/getOrderHistory.notFound',
+                    });
+                }
+            })
+        } catch (error) {
+            res.status(500).json({
+                code: 'checkout/cancel.error',
+                error: error.message
+            });
+        }
+    }
+
+    //[GET] baseUrl/checkout/order/detail/:orderId
+    getOrderDetail(req, res) {
+        try {
+            const orderId = req.params.orderId
+            
+            db.query('SELECT food_order.id, food_item.name, food_item.image, food_item.price, food_order.quantity, shop.shipFee FROM food_order JOIN food_item ON food_item.id = food_order.foodId JOIN shop ON shop.id = food_item.shopId WHERE food_order.id = ?', [orderId], (err, result) => {
+                if (err) throw err;
+                if (result.length) {
+                    const totalOfFood = result[0].price * result[0].quantity;
+                    const total = (result[0].price * result[0].quantity) + result[0].shipFee;
+
+                    res.status(200).json({
+                        data: {
+                            code: 'checkout/getBill.success',
+                            message: 'successful',
+                            bill: {
+                                ...result[0],
+                                totalOfFood,
+                                total
+                            }
+                        }
+                    });
+                } else {
+                    res.status(404).json({
+                        data: {
+                            code: 'checkout/getBill.notFound',
+                            message: 'not found cartId',
+                        }
+                    });
+                }
+            })
+        } catch (error) {
+            res.status(500).json({
+                code: 'checkout/getBill.error',
+
                 error: error.message
             });
         }

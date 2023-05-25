@@ -14,6 +14,16 @@ import sendMail from '../utils/mailer.js';
 import 'dotenv/config';
 
 class AuthControlller {
+  //[POST] baseUrl/auth
+  verifyToken (req, res) {
+    res.status(200).json({
+      data: {
+        code: 'auth/verifyToken.success',
+        message: 'token verification successful'
+      }
+    })
+  }
+
   //[POST] BaseURL/auth/register
   register(req, res) {
     try {
